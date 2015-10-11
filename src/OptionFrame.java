@@ -1,0 +1,869 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * NewJDialog.java
+ *
+ * Created on Mar 21, 2012, 5:14:20 PM
+ */
+package fyprushediting;
+
+import it.sauronsoftware.jave.Encoder;
+import it.sauronsoftware.jave.EncoderException;
+import java.awt.event.ItemEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
+import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
+import javax.swing.text.DefaultFormatter;
+
+/**
+ *
+ * @author kyo
+ */
+public class OptionFrame extends javax.swing.JDialog {
+
+    private Options tmpOptions;
+    private String errorMsg;
+    /** Creates new form NewJDialog
+     * @param parent 
+     * @param modal 
+     */
+    public OptionFrame(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
+
+        this.setTitle("Options");
+        this.setResizable(false);
+        initComponents();
+        //OptionFrame.options;
+        this.optionTab.setTitleAt(0, "Shot Boundary");
+        this.optionTab.setTitleAt(1, "Junk Frames");
+        this.optionTab.setTitleAt(2, "Inter-Shot Clustering");
+        this.optionTab.setTitleAt(3, "Clips Generation");
+        //videoTab.setTitleAt(3, "System Log");
+        this.optionTab.setSelectedIndex(0);
+
+
+        //ui
+        optionTab.setUI(new BasicTabbedPaneUI());
+        oalg.setUI(new BasicComboBoxUI());
+        oformat.setUI(new BasicComboBoxUI());
+
+        for (int i = 0; i < Options.algorithms.length; i++) {
+            oalg.addItem(Options.algorithms[i]);
+        }
+
+        Encoder encoder = new Encoder();
+        String ef[] = null;
+        try {
+            ef = encoder.getSupportedEncodingFormats();
+        } catch (EncoderException ex) {
+            JOptionPane.showMessageDialog(null,
+                    ex.toString(),
+                    "Errors",
+                    JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(OptionFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        for (int i = 0; i < ef.length; i++) {
+            oformat.addItem(ef[i]);
+        }
+
+        //update the threshold as spinner changes
+        setSpinnerEvent(ofeatures);
+        setSpinnerEvent(okeyframes);
+
+
+        //read local storage
+        tmpOptions = new Options();
+        tmpOptions.readOptions();
+        resetOptions();
+    }
+
+    private void setSpinnerEvent(JSpinner sp) {
+        JComponent comp = sp.getEditor();
+        JFormattedTextField field = (JFormattedTextField) comp.getComponent(0);
+        DefaultFormatter formatter = (DefaultFormatter) field.getFormatter();
+        formatter.setCommitsOnValidEdit(true);
+        sp.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int featureThreshold = (Integer) okeyframes.getValue() * (Integer) okeyframes.getValue() * (Integer) ofeatures.getValue();
+                ofeatureThreshold.setText("Threshold (Features Matching): " + featureThreshold);
+            }
+        });
+    }
+
+    private void resetOptions() {
+        //shot boundary
+        oalg.setSelectedItem(tmpOptions.alg);
+        othreshold.setValue(tmpOptions.threshold[tmpOptions.algIndex]);
+        othreads.setValue(tmpOptions.numThread[tmpOptions.algIndex]);
+
+
+        //junk
+        otolerance.setValue(tmpOptions.tolerance[tmpOptions.algIndex]);
+        ominDuration.setValue(tmpOptions.minDuration);
+        odumpPath.setText(tmpOptions.dumpPath);
+
+        //intershot
+        okeyframes.setValue(tmpOptions.keyframeSegments);
+        ofeatures.setValue(tmpOptions.featuresInSimilarScene);
+        int featureThreshold = tmpOptions.keyframeSegments * tmpOptions.keyframeSegments * tmpOptions.featuresInSimilarScene;
+        ofeatureThreshold.setText("Threshold (Features Matching): " + featureThreshold);
+
+        //output
+        ooutputDir.setText(tmpOptions.outputDir);
+        oformat.setSelectedItem(tmpOptions.selectedFormat);
+        ochartWidth.setValue(tmpOptions.chartWidth);
+        ochartHeight.setValue(tmpOptions.chartHeight);
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel4 = new javax.swing.JPanel();
+        optionTab = new javax.swing.JTabbedPane();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        oalg = new javax.swing.JComboBox();
+        othreshold = new javax.swing.JSpinner();
+        othreads = new javax.swing.JSpinner();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        odumpPath = new javax.swing.JTextField();
+        openDumpBtn = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        ominDuration = new javax.swing.JSpinner();
+        jLabel5 = new javax.swing.JLabel();
+        otolerance = new javax.swing.JSpinner();
+        jLabel7 = new javax.swing.JLabel();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        jlbx = new javax.swing.JLabel();
+        okeyframes = new javax.swing.JSpinner();
+        ofeatures = new javax.swing.JSpinner();
+        ofeatureThreshold = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        outputDirBtn = new javax.swing.JButton();
+        ooutputDir = new javax.swing.JTextField();
+        jLabel11 = new javax.swing.JLabel();
+        ochartWidth = new javax.swing.JSpinner();
+        ochartHeight = new javax.swing.JSpinner();
+        jLabel12 = new javax.swing.JLabel();
+        oformat = new javax.swing.JComboBox();
+        jPanel5 = new javax.swing.JPanel();
+        savebtn = new javax.swing.JButton();
+        cancelbtn = new javax.swing.JButton();
+        resetbtn = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(fyprushediting.FYPRushEditingApp.class).getContext().getResourceMap(OptionFrame.class);
+        setBackground(resourceMap.getColor("Form.background")); // NOI18N
+        setName("Form"); // NOI18N
+
+        jPanel4.setBackground(resourceMap.getColor("jPanel4.background")); // NOI18N
+        jPanel4.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel4.setName("jPanel4"); // NOI18N
+        jPanel4.setLayout(new java.awt.BorderLayout());
+
+        optionTab.setBackground(resourceMap.getColor("optionTab.background")); // NOI18N
+        optionTab.setForeground(resourceMap.getColor("optionTab.foreground")); // NOI18N
+        optionTab.setFont(resourceMap.getFont("optionTab.font")); // NOI18N
+        optionTab.setName("optionTab"); // NOI18N
+        optionTab.setPreferredSize(new java.awt.Dimension(654, 233));
+
+        jPanel1.setBackground(resourceMap.getColor("jPanel1.background")); // NOI18N
+        jPanel1.setName("jPanel1"); // NOI18N
+        jPanel1.setPreferredSize(new java.awt.Dimension(377, 187));
+
+        jLabel1.setFont(resourceMap.getFont("jLabel4.font")); // NOI18N
+        jLabel1.setForeground(resourceMap.getColor("jLabel4.foreground")); // NOI18N
+        jLabel1.setText(resourceMap.getString("jLabel1.text")); // NOI18N
+        jLabel1.setName("jLabel1"); // NOI18N
+
+        jLabel2.setFont(resourceMap.getFont("jLabel4.font")); // NOI18N
+        jLabel2.setForeground(resourceMap.getColor("jLabel4.foreground")); // NOI18N
+        jLabel2.setText(resourceMap.getString("jLabel2.text")); // NOI18N
+        jLabel2.setName("jLabel2"); // NOI18N
+
+        jLabel3.setFont(resourceMap.getFont("jLabel4.font")); // NOI18N
+        jLabel3.setForeground(resourceMap.getColor("jLabel4.foreground")); // NOI18N
+        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setName("jLabel3"); // NOI18N
+
+        oalg.setFont(resourceMap.getFont("oalg.font")); // NOI18N
+        oalg.setBorder(null);
+        oalg.setName("oalg"); // NOI18N
+        oalg.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                oalgItemStateChanged(evt);
+            }
+        });
+
+        othreshold.setFont(resourceMap.getFont("othreshold.font")); // NOI18N
+        othreshold.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), null, null, Integer.valueOf(100)));
+        othreshold.setName("othreshold"); // NOI18N
+        othreshold.setPreferredSize(new java.awt.Dimension(34, 24));
+
+        othreads.setFont(resourceMap.getFont("othreads.font")); // NOI18N
+        othreads.setModel(new javax.swing.SpinnerNumberModel());
+        othreads.setName("othreads"); // NOI18N
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(oalg, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(othreshold, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(275, 275, 275))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(othreads, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                .addGap(340, 340, 340))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(oalg, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(24, 24, 24)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(othreshold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(othreads, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(57, Short.MAX_VALUE))
+        );
+
+        optionTab.addTab(resourceMap.getString("jPanel1.TabConstraints.tabTitle"), jPanel1); // NOI18N
+
+        jPanel2.setBackground(resourceMap.getColor("jPanel2.background")); // NOI18N
+        jPanel2.setName("jPanel2"); // NOI18N
+
+        jLabel6.setFont(resourceMap.getFont("jLabel7.font")); // NOI18N
+        jLabel6.setForeground(resourceMap.getColor("jLabel7.foreground")); // NOI18N
+        jLabel6.setText(resourceMap.getString("jLabel6.text")); // NOI18N
+        jLabel6.setName("jLabel6"); // NOI18N
+
+        odumpPath.setBackground(resourceMap.getColor("jTextField3.background")); // NOI18N
+        odumpPath.setFont(resourceMap.getFont("odumpPath.font")); // NOI18N
+        odumpPath.setForeground(resourceMap.getColor("odumpPath.foreground")); // NOI18N
+        odumpPath.setText(resourceMap.getString("odumpPath.text")); // NOI18N
+        odumpPath.setName("odumpPath"); // NOI18N
+
+        openDumpBtn.setBackground(resourceMap.getColor("openDumpBtn.background")); // NOI18N
+        openDumpBtn.setText(resourceMap.getString("openDumpBtn.text")); // NOI18N
+        openDumpBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        openDumpBtn.setName("openDumpBtn"); // NOI18N
+        openDumpBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDumpBtnActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setFont(resourceMap.getFont("jLabel4.font")); // NOI18N
+        jLabel4.setForeground(resourceMap.getColor("jLabel7.foreground")); // NOI18N
+        jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
+        jLabel4.setToolTipText(resourceMap.getString("jLabel4.toolTipText")); // NOI18N
+        jLabel4.setName("jLabel4"); // NOI18N
+
+        ominDuration.setFont(resourceMap.getFont("ominDuration.font")); // NOI18N
+        ominDuration.setModel(new javax.swing.SpinnerNumberModel());
+        ominDuration.setName("ominDuration"); // NOI18N
+
+        jLabel5.setFont(resourceMap.getFont("jLabel7.font")); // NOI18N
+        jLabel5.setForeground(resourceMap.getColor("jLabel7.foreground")); // NOI18N
+        jLabel5.setText(resourceMap.getString("jLabel5.text")); // NOI18N
+        jLabel5.setName("jLabel5"); // NOI18N
+
+        otolerance.setFont(resourceMap.getFont("otolerance.font")); // NOI18N
+        otolerance.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), null, null, Integer.valueOf(10)));
+        otolerance.setName("otolerance"); // NOI18N
+
+        jLabel7.setFont(resourceMap.getFont("jLabel7.font")); // NOI18N
+        jLabel7.setForeground(resourceMap.getColor("jLabel7.foreground")); // NOI18N
+        jLabel7.setText(resourceMap.getString("jLabel7.text")); // NOI18N
+        jLabel7.setName("jLabel7"); // NOI18N
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(27, 27, 27)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(odumpPath, javax.swing.GroupLayout.PREFERRED_SIZE, 431, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(openDumpBtn))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(otolerance, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel7))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(ominDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(178, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(ominDuration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel7)
+                    .addComponent(otolerance, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel6)
+                    .addComponent(openDumpBtn))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(odumpPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(36, Short.MAX_VALUE))
+        );
+
+        optionTab.addTab(resourceMap.getString("jPanel2.TabConstraints.tabTitle"), jPanel2); // NOI18N
+
+        jPanel6.setBackground(resourceMap.getColor("jPanel6.background")); // NOI18N
+        jPanel6.setName("jPanel6"); // NOI18N
+
+        jLabel10.setFont(resourceMap.getFont("jlbx.font")); // NOI18N
+        jLabel10.setForeground(resourceMap.getColor("jlbx.foreground")); // NOI18N
+        jLabel10.setText(resourceMap.getString("jLabel10.text")); // NOI18N
+        jLabel10.setName("jLabel10"); // NOI18N
+
+        jlbx.setFont(resourceMap.getFont("jlbx.font")); // NOI18N
+        jlbx.setForeground(resourceMap.getColor("jlbx.foreground")); // NOI18N
+        jlbx.setText(resourceMap.getString("jlbx.text")); // NOI18N
+        jlbx.setName("jlbx"); // NOI18N
+
+        okeyframes.setFont(resourceMap.getFont("okeyframes.font")); // NOI18N
+        okeyframes.setModel(new javax.swing.SpinnerNumberModel());
+        okeyframes.setName("okeyframes"); // NOI18N
+
+        ofeatures.setFont(resourceMap.getFont("ofeatures.font")); // NOI18N
+        ofeatures.setModel(new javax.swing.SpinnerNumberModel());
+        ofeatures.setName("ofeatures"); // NOI18N
+
+        ofeatureThreshold.setFont(resourceMap.getFont("ofeatureThreshold.font")); // NOI18N
+        ofeatureThreshold.setForeground(resourceMap.getColor("ofeatureThreshold.foreground")); // NOI18N
+        ofeatureThreshold.setText(resourceMap.getString("ofeatureThreshold.text")); // NOI18N
+        ofeatureThreshold.setName("ofeatureThreshold"); // NOI18N
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ofeatureThreshold)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jLabel10)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(okeyframes, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jlbx)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(ofeatures, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(199, Short.MAX_VALUE))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(okeyframes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jlbx)
+                    .addComponent(ofeatures, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(ofeatureThreshold)
+                .addContainerGap(66, Short.MAX_VALUE))
+        );
+
+        optionTab.addTab(resourceMap.getString("jPanel6.TabConstraints.tabTitle"), jPanel6); // NOI18N
+
+        jPanel3.setBackground(resourceMap.getColor("jPanel3.background")); // NOI18N
+        jPanel3.setName("jPanel3"); // NOI18N
+
+        jLabel8.setFont(resourceMap.getFont("jLabel8.font")); // NOI18N
+        jLabel8.setForeground(resourceMap.getColor("jLabel8.foreground")); // NOI18N
+        jLabel8.setText(resourceMap.getString("jLabel8.text")); // NOI18N
+        jLabel8.setName("jLabel8"); // NOI18N
+
+        jLabel9.setFont(resourceMap.getFont("jLabel8.font")); // NOI18N
+        jLabel9.setForeground(resourceMap.getColor("jLabel8.foreground")); // NOI18N
+        jLabel9.setText(resourceMap.getString("jLabel9.text")); // NOI18N
+        jLabel9.setName("jLabel9"); // NOI18N
+
+        outputDirBtn.setBackground(resourceMap.getColor("outputDirBtn.background")); // NOI18N
+        outputDirBtn.setText(resourceMap.getString("outputDirBtn.text")); // NOI18N
+        outputDirBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        outputDirBtn.setName("outputDirBtn"); // NOI18N
+        outputDirBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                outputDirBtnActionPerformed(evt);
+            }
+        });
+
+        ooutputDir.setBackground(resourceMap.getColor("ooutputDir.background")); // NOI18N
+        ooutputDir.setFont(resourceMap.getFont("ooutputDir.font")); // NOI18N
+        ooutputDir.setText(resourceMap.getString("ooutputDir.text")); // NOI18N
+        ooutputDir.setName("ooutputDir"); // NOI18N
+
+        jLabel11.setFont(resourceMap.getFont("jLabel11.font")); // NOI18N
+        jLabel11.setForeground(resourceMap.getColor("jLabel8.foreground")); // NOI18N
+        jLabel11.setText(resourceMap.getString("jLabel11.text")); // NOI18N
+        jLabel11.setName("jLabel11"); // NOI18N
+
+        ochartWidth.setFont(resourceMap.getFont("ochartWidth.font")); // NOI18N
+        ochartWidth.setName("ochartWidth"); // NOI18N
+
+        ochartHeight.setFont(resourceMap.getFont("ochartHeight.font")); // NOI18N
+        ochartHeight.setName("ochartHeight"); // NOI18N
+
+        jLabel12.setFont(resourceMap.getFont("jLabel12.font")); // NOI18N
+        jLabel12.setForeground(resourceMap.getColor("jLabel8.foreground")); // NOI18N
+        jLabel12.setText(resourceMap.getString("jLabel12.text")); // NOI18N
+        jLabel12.setName("jLabel12"); // NOI18N
+
+        oformat.setBackground(resourceMap.getColor("oformat.background")); // NOI18N
+        oformat.setFont(resourceMap.getFont("oformat.font")); // NOI18N
+        oformat.setName("oformat"); // NOI18N
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(outputDirBtn))
+                    .addComponent(ooutputDir, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ochartWidth, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel11)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(ochartHeight, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel12)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(oformat, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(108, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel12)
+                    .addComponent(oformat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(ochartWidth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel11)
+                    .addComponent(ochartHeight, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel8)
+                    .addComponent(outputDirBtn))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(ooutputDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(30, Short.MAX_VALUE))
+        );
+
+        optionTab.addTab(resourceMap.getString("jPanel3.TabConstraints.tabTitle"), jPanel3); // NOI18N
+
+        jPanel4.add(optionTab, java.awt.BorderLayout.PAGE_START);
+
+        getContentPane().add(jPanel4, java.awt.BorderLayout.CENTER);
+
+        jPanel5.setBackground(resourceMap.getColor("jPanel5.background")); // NOI18N
+        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(resourceMap.getColor("jPanel5.border.lineColor"), 3)); // NOI18N
+        jPanel5.setName("jPanel5"); // NOI18N
+        jPanel5.setPreferredSize(new java.awt.Dimension(486, 50));
+
+        savebtn.setBackground(resourceMap.getColor("savebtn.background")); // NOI18N
+        savebtn.setText(resourceMap.getString("savebtn.text")); // NOI18N
+        savebtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        savebtn.setMinimumSize(new java.awt.Dimension(57, 13));
+        savebtn.setName("savebtn"); // NOI18N
+        savebtn.setPreferredSize(new java.awt.Dimension(57, 13));
+        savebtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                savebtnActionPerformed(evt);
+            }
+        });
+
+        cancelbtn.setBackground(resourceMap.getColor("jButton3.background")); // NOI18N
+        cancelbtn.setText(resourceMap.getString("cancelbtn.text")); // NOI18N
+        cancelbtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        cancelbtn.setMinimumSize(new java.awt.Dimension(65, 13));
+        cancelbtn.setName("cancelbtn"); // NOI18N
+        cancelbtn.setPreferredSize(new java.awt.Dimension(65, 13));
+        cancelbtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelbtnActionPerformed(evt);
+            }
+        });
+
+        resetbtn.setBackground(resourceMap.getColor("jButton3.background")); // NOI18N
+        resetbtn.setText(resourceMap.getString("resetbtn.text")); // NOI18N
+        resetbtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        resetbtn.setName("resetbtn"); // NOI18N
+        resetbtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetbtnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap(337, Short.MAX_VALUE)
+                .addComponent(savebtn, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(cancelbtn, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(resetbtn)
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(savebtn, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
+                    .addComponent(cancelbtn, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+                    .addComponent(resetbtn))
+                .addGap(13, 13, 13))
+        );
+
+        getContentPane().add(jPanel5, java.awt.BorderLayout.SOUTH);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+private void cancelbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelbtnActionPerformed
+// TODO add your handling code here:
+    this.dispose();
+}//GEN-LAST:event_cancelbtnActionPerformed
+
+private void resetbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetbtnActionPerformed
+// TODO add your handling code here:
+    tmpOptions = new Options();
+    resetOptions();
+}//GEN-LAST:event_resetbtnActionPerformed
+
+private void savebtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savebtnActionPerformed
+// TODO add your handling code here:
+    ObjectOutputStream outputStream = null;
+
+    //create a new one
+    File f;
+    f = new File("options.txt");
+    if (!f.exists()) {
+        try {
+            f.createNewFile();
+        } catch (IOException ex1) {
+            JOptionPane.showMessageDialog(null,
+                    ex1.toString(),
+                    "Errors",
+                    JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(Options.class.getName()).log(Level.SEVERE, null, ex1);
+        }
+    }
+    errorMsg = "";
+    try {
+
+        //Construct the LineNumberReader object
+        outputStream = new ObjectOutputStream(new FileOutputStream(new File("options.txt")));
+
+        Options newOptions = new Options();
+        //shot boundary
+        newOptions.algIndex = oalg.getSelectedIndex();
+        newOptions.alg = oalg.getSelectedItem().toString();
+        newOptions.numThread[newOptions.algIndex] = isInteger(othreads.getValue().toString(), tmpOptions.numThread[newOptions.algIndex]);
+        newOptions.threshold[newOptions.algIndex] = isInteger(othreshold.getValue().toString(), tmpOptions.threshold[newOptions.algIndex]);
+
+        //junk
+        newOptions.minDuration = isInteger(ominDuration.getValue().toString(), tmpOptions.minDuration);
+        newOptions.dumpPath = setFilePath(odumpPath.getText(), tmpOptions.dumpPath);
+        newOptions.tolerance[newOptions.algIndex] = isInteger(otolerance.getValue().toString(), tmpOptions.tolerance[newOptions.algIndex]);
+
+        //intershot
+        newOptions.keyframeSegments = isInteger(okeyframes.getValue().toString(), tmpOptions.keyframeSegments);
+        newOptions.featuresInSimilarScene = isInteger(ofeatures.getValue().toString(), tmpOptions.featuresInSimilarScene);
+
+
+        //output
+        newOptions.outputDir = setFilePath(ooutputDir.getText(), tmpOptions.outputDir);
+        newOptions.selectedFormat = oformat.getSelectedItem().toString();
+        newOptions.chartWidth = isInteger(ochartWidth.getValue().toString(), tmpOptions.chartWidth);
+        newOptions.chartHeight = isInteger(ochartHeight.getValue().toString(), tmpOptions.chartHeight);
+
+
+        outputStream.writeObject(newOptions);
+
+
+    } catch (FileNotFoundException ex) {
+        JOptionPane.showMessageDialog(null,
+                ex.toString(),
+                "Errors",
+                JOptionPane.ERROR_MESSAGE);
+        ex.printStackTrace();
+    } catch (IOException ex) {
+        JOptionPane.showMessageDialog(null,
+                ex.toString(),
+                "Errors",
+                JOptionPane.ERROR_MESSAGE);
+        ex.printStackTrace();
+    } finally {
+        //Close the ObjectOutputStream
+        try {
+            if (outputStream != null) {
+                outputStream.flush();
+                outputStream.close();
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null,
+                    ex.toString(),
+                    "Errors",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    tmpOptions.readOptions();
+    resetOptions();
+
+    JOptionPane.showMessageDialog(this,
+            "Save Successfully",
+            "Save Complete",
+            JOptionPane.INFORMATION_MESSAGE);
+}//GEN-LAST:event_savebtnActionPerformed
+
+private void openDumpBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDumpBtnActionPerformed
+// TODO add your handling code here:
+    JFileChooser fileChooser = new JFileChooser();
+
+    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    int result = fileChooser.showOpenDialog(null);
+
+    File dir = null;
+    // user clicked Cancel button on dialog
+    if (result != JFileChooser.CANCEL_OPTION) {
+        dir = fileChooser.getSelectedFile();
+        if (dir.isDirectory()) {
+            odumpPath.setText(dir.getAbsolutePath());
+        }
+    }
+}//GEN-LAST:event_openDumpBtnActionPerformed
+
+private void outputDirBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputDirBtnActionPerformed
+// TODO add your handling code here:
+    JFileChooser fileChooser = new JFileChooser();
+
+    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    int result = fileChooser.showOpenDialog(null);
+
+    File dir = null;
+    // user clicked Cancel button on dialog
+    if (result != JFileChooser.CANCEL_OPTION) {
+        dir = fileChooser.getSelectedFile();
+        if (dir.isDirectory()) {
+            ooutputDir.setText(dir.getAbsolutePath());
+        }
+    }
+}//GEN-LAST:event_outputDirBtnActionPerformed
+
+private void oalgItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_oalgItemStateChanged
+// TODO add your handling code here:
+    if (evt.getStateChange() == ItemEvent.SELECTED && tmpOptions != null) {
+        //System.out.println(evt.getItem().toString());
+        othreshold.setValue(tmpOptions.threshold[oalg.getSelectedIndex()]);
+        othreads.setValue(tmpOptions.numThread[oalg.getSelectedIndex()]);
+        otolerance.setValue(tmpOptions.tolerance[oalg.getSelectedIndex()]);
+    }
+}//GEN-LAST:event_oalgItemStateChanged
+
+    private int isInteger(Object integer, int defaultInt) {
+        try {
+            int x = Integer.parseInt((String) integer);
+            return x;
+        } catch (NumberFormatException nFE) {
+            JOptionPane.showMessageDialog(null,
+                    nFE.toString(),
+                    "Errors",
+                    JOptionPane.ERROR_MESSAGE);
+            return defaultInt;
+        }
+    }
+
+    private String setFilePath(String path, String defaultPath) {
+        try {
+            File f = new File(path);
+            if (!f.exists()) {
+                return defaultPath;
+            } else {
+                return f.getAbsolutePath();
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,
+                    e.toString(),
+                    "Errors",
+                    JOptionPane.ERROR_MESSAGE);
+            return defaultPath;
+        }
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Windows Classic".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(OptionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(OptionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(OptionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(OptionFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
+        //</editor-fold>
+
+        /* Create and display the dialog */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                OptionFrame dialog = new OptionFrame(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+    }
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelbtn;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JLabel jlbx;
+    private javax.swing.JComboBox oalg;
+    private javax.swing.JSpinner ochartHeight;
+    private javax.swing.JSpinner ochartWidth;
+    private javax.swing.JTextField odumpPath;
+    private javax.swing.JLabel ofeatureThreshold;
+    private javax.swing.JSpinner ofeatures;
+    private javax.swing.JComboBox oformat;
+    private javax.swing.JSpinner okeyframes;
+    private javax.swing.JSpinner ominDuration;
+    private javax.swing.JTextField ooutputDir;
+    private javax.swing.JButton openDumpBtn;
+    private javax.swing.JTabbedPane optionTab;
+    private javax.swing.JSpinner othreads;
+    private javax.swing.JSpinner othreshold;
+    private javax.swing.JSpinner otolerance;
+    private javax.swing.JButton outputDirBtn;
+    private javax.swing.JButton resetbtn;
+    private javax.swing.JButton savebtn;
+    // End of variables declaration//GEN-END:variables
+}
